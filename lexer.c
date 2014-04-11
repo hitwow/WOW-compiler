@@ -8,58 +8,51 @@
 #include <ctype.h>
 
 #include "lexer.h"
+#include "kword.h"
+
+FILE* fp;
 
 void lexer(char* name)
 {
-	FILE* fp;
 	char ch;
+	char word[KWLEN];
+	char tstr[SLEN];
+	char tch[CLEN];
+	int i;
 
 	fp = fopen(name, "r+");
 
-	while ((ch=getc(fp))!=EOF)
+	while ((ch=get_ch())!=EOF)
 	{
-
-	}
-
-	fclose(fp);
-}
-
-
-
-
-
-/*
-void lexer(char* name)
-{
-	char ch;
-	char* words;
-
-	init_stable();
-	init_buf(name);
-
-	while (get_ch(&ch))
-	{
-		if (ch==' '||ch=='\t'||ch=='\n')
+		if (ch==' '||ch=='\t'||ch=='\n'||ch=='\r')
 			continue;
 		else if (isalpha(ch))
 		{
-			get_ch(&ch);
+			i = 0;
+			word[i++] = ch;
+			ch = get_ch();
 			while (isalnum(ch))
-				get_ch(&ch);
-			ep--;
-			words = (char)malloc(ep-sp);
-			gettoken(words);
-			intokens(getcode(words), getid(words));
+			{
+				word[i++] = ch;
+				ch = get_ch();
+			}
+			retract();
+			word[i] = '\0';
+			printf("%s\n", word);
 		}
 		else if (isdigit(ch))
 		{
-			get_ch(&ch);
-			while (isnum(ch))
-				get_ch(&ch);
-			ep--;
-			words = (char)malloc(ep-sp);
-			gettoken(words);
-			intokens(INT, atoi(words));
+			i = 0;
+			word[i++] = ch;
+			ch = get_ch();
+			while (isdigit(ch))
+			{
+				word[i++] = ch;
+				ch = get_ch();
+			}
+			retract();
+			word[i] = '\0';
+			printf("%s\n", word);
 		}
 		else
 		{
@@ -69,22 +62,22 @@ void lexer(char* name)
 				intokens(SHARP, 0);
 				break;
 			case '<':
-				get_ch(&ch);
+				ch = get_ch();
 				if (ch=='=')
 					intokens(LE, 0);
 				else
 				{
-					ep--;
+					retract();
 					intokens(LT, 0);
 				}
 				break;
 			case '>':
-				get_ch(&ch);
+				ch = get_ch();
 				if (ch=='=')
 					intokens(GE, 0);
 				else
 				{
-					ep--;
+					retract();
 					intokens(GT, 0);
 				}
 				break;
@@ -107,83 +100,127 @@ void lexer(char* name)
 				intokens(SEMIC, 0);
 				break;
 			case '=':
-				get_ch(&ch);
+				ch = get_ch();
 				if (ch=='=')
 					intokens(DEQ, 0);
 				else
 				{
-					ep--;
+					retract();
 					intokens(EQ, 0);
 				}
 				break;
 			case '+':
-				get_ch(&ch);
+				ch = get_ch();
 				if (ch=='=')
 					intokens(PE, 0);
 				else if (ch=='+')
 					intokens(DPLUS, 0);
 				else
 				{
-					ep--;
+					retract();
 					intokens(PLUS, 0);
 				}
 				break;
 			case '-':
-				get_ch(&ch);
+				ch = get_ch();
 				if (ch=='=')
 					intokens(MIE, 0);
-				else if (ch=='+')
+				else if (ch=='-')
 					intokens(DMINUS, 0);
 				else
 				{
-					ep--;
+					retract();
 					intokens(MINUS, 0);
 				}
 				break;
 			case '*':
-				get_ch(&ch);
+				ch = get_ch();
 				if (ch=='=')
 					intokens(MUE, 0);
 				else
 				{
-					ep--;
+					retract();
 					intokens(MULTI, 0);
 				}
 				break;
 			case '/':
-				get_ch(&ch);
+				ch = get_ch();
 				if (ch=='=')
 					intokens(DE, 0);
 				else
 				{
-					ep--;
+					retract();
 					intokens(RDIV, 0);
 				}
 				break;
 			case '!':
-				get_ch(&ch);
+				ch = get_ch();
 				if (ch=='=')
 					intokens(NE, 0);
 				else
 					printf("Wrong letter \'!\'.\n");
 				break;
-			case '\"':
-				intokens(D_MARK, 0);
+			case '.':
+				intokens(POINT, 0);
+				break;
+			case '[':
+				intokens(LS_BRAC, 0);
+				break;
+			case ']':
+				intokens(RS_BRAC, 0);
 				break;
 			case '\'':
-				intokens(Q_MARK, 0);
+				tch[0] = ch;
+				tch[1] = get_ch();
+				ch = get_ch();
+				if (ch!='\'')
+				{
+					printf("Wrong letter!\n");
+					retract();
+				}
+				else
+				{
+					tch[2] = ch;
+					tch[3] = '\0';
+					printf("%s\n", tch);
+				}
+				break;
+			case '\"':
+				i = 0;
+				tstr[i++] = ch;
+				ch = get_ch();
+				while (ch!='\"')
+				{
+					tstr[i++] = ch;
+					ch = get_ch();
+				}
+				tstr[i++] = ch;
+				tstr[i] = '\0';
+				printf("%s\n", tstr);
 				break;
 			default:
-				printf("Wrong letter \'%c\'.\n");
+				printf("Wrong letter \'%c\'.\n", ch);
 			}
 		}
-		sp = ep;
-		num++;
 	}
+
+	fclose(fp);
 }
 
-int get_ch(char* ch)
+char get_ch()
 {
+	char ch;
+	ch = getc(fp);
 
+	return ch;
 }
-*/
+
+void intokens(int a, int b)
+{
+	printf("%d, %d\n", a, b);
+}
+
+void retract()
+{
+	fseek(fp, -1, 1);
+}

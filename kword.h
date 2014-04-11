@@ -36,6 +36,7 @@
 #define MIE		25
 #define MUE		26
 #define DE		27
+#define POINT	28
 
 #define	INCLUDE	31
 #define	INT		32
