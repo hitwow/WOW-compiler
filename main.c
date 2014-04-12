@@ -14,7 +14,12 @@ int main()
 	scanf ("%s", name);
 
 	lexer(name);
-	//show_table("table1");
+	/*
+	int i;
+	for (i=0; i<tokennum; i++)
+		printf("%d, %d\n", optb[i].id, optb[i].num);
+*/
+	showas();
 
 	return 0;
 }

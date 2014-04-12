@@ -46,5 +46,7 @@
 #define	ELSE	36
 #define	RETURN	37
 #define ID		38
+#define STR		39
+#define CHR		40
 
 #endif /* KWORD_H_ */
